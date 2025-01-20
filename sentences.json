@@ -10,6 +10,18 @@
     {
         "id": 3,
         "text": "The sky is blue."
+    },
+    {
+        "id": 4,
+        "text": "This is a correct sentence."
+    },
+    {
+        "id": 5,
+        "text": "This sentence is incorrect."
+    },
+    {
+        "id": 3,
+        "text": "This is a correct sentence."
     }
     
 ]
