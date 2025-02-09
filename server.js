@@ -84,6 +84,15 @@ app.post('/api/submit-answer', (req, res) => {
 // Serve static files from the 'app' directory
 app.use(express.static(path.join(__dirname)));
 
+app.use((err, req, res, next) => {
+  console.error('❌ Application Error:', err.stack);  // Log full error details
+  res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+      error: err.message  // Send the error message to the client for debugging
+  });
+});
+
 // Fallback to index.html for SPA routing
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
