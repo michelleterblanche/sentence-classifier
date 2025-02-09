@@ -24,13 +24,16 @@ const db = mysql.createPool({
 // Connect to MySQL
 
 // Connect to MySQL
-db.connect((err) => {
-  if (err) {
-    console.error('Error connecting to MySQL:', err);
-    return;
+(async () => {
+  try {
+    const connection = await db.getConnection();
+    console.log('✅ Connected to MySQL database');
+    connection.release();
+  } catch (err) {
+    console.error('❌ Database connection failed:', err);
   }
-  console.log('Connected to Azure MySQL with SSL');
-});
+})();
+
 
 // Route to get sentences from the database
 app.get('/api/sentences', (req, res) => {
