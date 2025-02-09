@@ -6,14 +6,18 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Create MySQL connection to Azure
-const db = mysql.createConnection({
+const db = mysql.createPool({
   host: process.env.DB_HOST,         // Azure MySQL server name (e.g., sent-classify-db.mysql.database.azure.com)
   user: process.env.DB_USER,         // DB username
   password: process.env.DB_PASSWORD, // DB password
   database: process.env.DB_NAME,                            // The name of your database
-  port: 3306,                                          // Default MySQL port
+  port: 3306, 
+  waitForConnections: true,
+  connectionLimit: 10,          // Max number of connections
+  queueLimit: 0,                                         // Default MySQL port
   ssl: {
-    ca: fs.readFileSync(path.join(__dirname, 'Azure-cert.pem')) // Optional: Provide SSL certificate if required by Azure
+    rejectUnauthorized: true
+    //ca: fs.readFileSync(path.join(__dirname, 'Azure-cert.pem')) // Optional: Provide SSL certificate if required by Azure
   }
 });
 
@@ -30,20 +34,33 @@ db.connect((err) => {
 
 // Route to get sentences from the database
 app.get('/api/sentences', (req, res) => {
-  const query = 'SELECT id, sentence FROM test ORDER BY RAND()';
+  const query = 'SELECT id, text FROM sentences ORDER BY RAND()';
 
-  db.query(query, (err, results) => {
+  db.getConnection((err, connection) => {
       if (err) {
-          console.error('❌ Error fetching sentences:', err);  // Log the exact error
+          console.error('❌ Database connection error:', err);
           return res.status(500).json({
               success: false,
-              message: 'Failed to fetch sentences',
-              error: err.message  // Send the error message in the response
+              message: 'Database connection failed',
+              error: err.message
           });
       }
 
-      console.log('✅ Sentences fetched successfully:', results);  // Log success
-      res.json(results);
+      connection.query(query, (queryErr, results) => {
+          connection.release(); // Release the connection back to the pool
+
+          if (queryErr) {
+              console.error('❌ Query error:', queryErr);
+              return res.status(500).json({
+                  success: false,
+                  message: 'Failed to fetch sentences',
+                  error: queryErr.message
+              });
+          }
+
+          console.log('✅ Sentences fetched:', results);
+          res.json(results);
+      });
   });
 });
 
