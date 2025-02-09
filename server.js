@@ -28,7 +28,7 @@ db.connect((err) => {
 
 // Route to get sentences from the database
 app.get('/api/sentences', (req, res) => {
-  const query = 'SELECT text FROM sentences'; // Adjust table and column names if necessary
+  const query = 'SELECT sentence FROM test'; // Adjust table and column names if necessary
   db.query(query, (err, results) => {
     if (err) {
       console.error('Error fetching sentences:', err);
