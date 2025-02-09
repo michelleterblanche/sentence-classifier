@@ -1,0 +1,17 @@
+{
+    "name": "sent-classify-2025",
+    "version": "1.0.0",
+    "description": "A Node.js app for text classification",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js"
+    },
+    "dependencies": {
+        "express": "^4.21.2"
+    },
+    "engines": {
+        "node": "20.x"
+    },
+    "author": "Your Name",
+    "license": "MIT"
+}
