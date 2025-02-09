@@ -70,7 +70,7 @@ app.post('/api/submit-answer', (req, res) => {
   const columnToUpdate = isCorrect ? 'correct_count' : 'incorrect_count';
   
   // Update the correct/incorrect count for the specific sentence
-  const query = `UPDATE test SET ${columnToUpdate} = ${columnToUpdate} + 1 WHERE id = ?`;
+  const query = `UPDATE sqltest SET ${columnToUpdate} = ${columnToUpdate} + 1 WHERE id = ?`;
   
   db.query(query, [sentenceId], (err, results) => {
     if (err) {
