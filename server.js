@@ -34,7 +34,7 @@ db.connect((err) => {
 
 // Route to get sentences from the database
 app.get('/api/sentences', (req, res) => {
-  const query = 'SELECT id, text FROM sentences ORDER BY RAND()';
+  const query = 'SELECT id, sentence FROM sqltest ORDER BY RAND()';
 
   db.getConnection((err, connection) => {
       if (err) {
