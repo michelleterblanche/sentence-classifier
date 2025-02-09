@@ -1,10 +1,10 @@
 let sentences = [];
 let currentSentenceIndex = 0;
 
-// Load sentences from the static JSON file
+// Load sentences from the MySQL database (via Express API)
 async function loadSentences() {
     try {
-        const response = await fetch('sentences.json');
+        const response = await fetch('/api/sentences'); // Fetch sentences from the new API route
         if (!response.ok) throw new Error("Failed to load sentences");
         sentences = await response.json();
         loadSentence(); // Load the first sentence
@@ -24,14 +24,12 @@ function loadSentence() {
         return;
     }
     const sentence = sentences[currentSentenceIndex];
-    document.getElementById('sentence').innerText = sentence.text;
+    document.getElementById('sentence').innerText = sentence;
 }
 
 // Handle the user's answer
 async function submitAnswer(isCorrect) {
     const sentence = sentences[currentSentenceIndex];
-    //const isAnswerCorrect = sentence.is_correct === isCorrect;
-
     const feedbackMessage = `${isCorrect ? "You selected: Correct!" : "You selected: Incorrect!"}`;
     document.getElementById('feedback').innerText = feedbackMessage;
 
