@@ -30,13 +30,20 @@ db.connect((err) => {
 
 // Route to get sentences from the database
 app.get('/api/sentences', (req, res) => {
-  const query = 'SELECT id, sentence FROM test ORDER BY RAND()'; // Fetch sentences in random order
+  const query = 'SELECT id, sentence FROM test ORDER BY RAND()';
+
   db.query(query, (err, results) => {
-    if (err) {
-      console.error('Error fetching sentences:', err);
-      return res.status(500).json({ error: 'Failed to fetch sentences' });
-    }
-    res.json(results); // Return the sentences in random order
+      if (err) {
+          console.error('❌ Error fetching sentences:', err);  // Log the exact error
+          return res.status(500).json({
+              success: false,
+              message: 'Failed to fetch sentences',
+              error: err.message  // Send the error message in the response
+          });
+      }
+
+      console.log('✅ Sentences fetched successfully:', results);  // Log success
+      res.json(results);
   });
 });
 
