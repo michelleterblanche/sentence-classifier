@@ -1,13 +1,13 @@
 let sentences = [];
 let currentSentenceIndex = 0;
 
-// Load sentences from the MySQL database (via Express API)
+// Load sentences from the backend (randomly shuffled)
 async function loadSentences() {
     try {
-        const response = await fetch('/api/sentences'); // Fetch sentences from the new API route
+        const response = await fetch('/api/sentences');
         if (!response.ok) throw new Error("Failed to load sentences");
         sentences = await response.json();
-        loadSentence(); // Load the first sentence
+        loadSentence(); // Load the first sentence randomly
     } catch (error) {
         console.error("Error loading sentences:", error);
         document.getElementById('sentence').innerText = "Error loading sentences.";
@@ -24,20 +24,38 @@ function loadSentence() {
         return;
     }
     const sentence = sentences[currentSentenceIndex];
-    document.getElementById('sentence').innerText = sentence;
+    document.getElementById('sentence').innerText = sentence.text;
 }
 
 // Handle the user's answer
 async function submitAnswer(isCorrect) {
     const sentence = sentences[currentSentenceIndex];
-    const feedbackMessage = `${isCorrect ? "You selected: Correct!" : "You selected: Incorrect!"}`;
-    document.getElementById('feedback').innerText = feedbackMessage;
 
-    setTimeout(() => {
-        document.getElementById('feedback').innerText = ""; // Clear feedback
-        currentSentenceIndex++; // Move to the next sentence
-        loadSentence(); // Load next sentence
-    }, 2000);
+    // Send the user's answer to the backend (including the sentence ID and correctness)
+    try {
+        const response = await fetch('/api/submit-answer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                sentenceId: sentence.id, // The ID of the current sentence
+                isCorrect: isCorrect
+            })
+        });
+
+        const result = await response.json();
+        console.log(result.message); // Handle server response
+
+        const feedbackMessage = `${isCorrect ? "You selected: Correct!" : "You selected: Incorrect!"}`;
+        document.getElementById('feedback').innerText = feedbackMessage;
+
+        setTimeout(() => {
+            document.getElementById('feedback').innerText = ""; // Clear feedback
+            currentSentenceIndex++; // Move to the next sentence
+            loadSentence(); // Load next sentence
+        }, 2000);
+    } catch (error) {
+        console.error('Error submitting answer:', error);
+    }
 }
 
 // Event listeners for correct and incorrect buttons

@@ -1,16 +1,16 @@
-const fs = require('fs');
 const express = require('express');
 const path = require('path');
 const mysql = require('mysql2');
+const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Create MySQL connection to Azure
 const db = mysql.createConnection({
-  host: 'your-database-name.mysql.database.azure.com', // Azure MySQL host
-  user: 'your-username@your-database-name',             // Azure MySQL username (typically your username + database name)
-  password: 'your-password',                           // Your MySQL password
-  database: 'sentences_db',                            // The name of your database
+  host: process.env.DB_HOST,         // Azure MySQL server name (e.g., sent-classify-db.mysql.database.azure.com)
+  user: process.env.DB_USER,         // DB username
+  password: process.env.DB_PASSWORD, // DB password
+  database: process.env.DB_NAME,                            // The name of your database
   port: 3306,                                          // Default MySQL port
   ssl: {
     ca: fs.readFileSync(path.join(__dirname, 'Azure-cert.pem')) // Optional: Provide SSL certificate if required by Azure
@@ -18,24 +18,42 @@ const db = mysql.createConnection({
 });
 
 // Connect to MySQL
+
+// Connect to MySQL
 db.connect((err) => {
   if (err) {
     console.error('Error connecting to MySQL:', err);
     return;
   }
-  console.log('Connected to Azure MySQL');
+  console.log('Connected to Azure MySQL with SSL');
 });
 
 // Route to get sentences from the database
 app.get('/api/sentences', (req, res) => {
-  const query = 'SELECT sentence FROM test'; // Adjust table and column names if necessary
+  const query = 'SELECT id, sentence FROM test ORDER BY RAND()'; // Fetch sentences in random order
   db.query(query, (err, results) => {
     if (err) {
       console.error('Error fetching sentences:', err);
       return res.status(500).json({ error: 'Failed to fetch sentences' });
     }
-    const sentences = results.map(row => row.text);
-    res.json(sentences);
+    res.json(results); // Return the sentences in random order
+  });
+});
+
+// Route to handle user responses and update the database
+app.post('/api/submit-answer', (req, res) => {
+  const { sentenceId, isCorrect } = req.body; // Expecting sentenceId and whether it's correct or not
+  const columnToUpdate = isCorrect ? 'correct_count' : 'incorrect_count';
+  
+  // Update the correct/incorrect count for the specific sentence
+  const query = `UPDATE test SET ${columnToUpdate} = ${columnToUpdate} + 1 WHERE id = ?`;
+  
+  db.query(query, [sentenceId], (err, results) => {
+    if (err) {
+      console.error('Error updating answer counts:', err);
+      return res.status(500).json({ error: 'Failed to update answer counts' });
+    }
+    res.json({ message: 'Answer submitted successfully' });
   });
 });
 
