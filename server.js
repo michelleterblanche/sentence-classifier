@@ -27,13 +27,21 @@ const db = mysql.createPool({
 // Connect to MySQL
 (async () => {
   try {
-    const connection = await db.getConnection();
-    console.log('✅ Connected to MySQL database');
-    connection.release();
+    const connection = await db.promise().getConnection();  // Added `.promise()` for better error handling
+    if (connection) {
+      console.log('✅ Connected to MySQL database');
+      connection.release();
+    } else {
+      console.error('❌ Failed to acquire a connection.');
+    }
   } catch (err) {
     console.error('❌ Database connection failed:', err);
   }
 })();
+
+db.on('error', (err) => {
+  console.error('❌ MySQL Pool Error:', err);
+});
 
 
 // Route to get sentences from the database
@@ -46,12 +54,12 @@ app.get('/api/sentences', (req, res) => {
           return res.status(500).json({
               success: false,
               message: 'Database connection failed',
-              error: err.message
+              error: err ? err.message : 'Connection is undefined',
           });
       }
 
       connection.query(query, (queryErr, results) => {
-          connection.release(); // Release the connection back to the pool
+          if (connection) connection.release(); // Safe release
 
           if (queryErr) {
               console.error('❌ Query error:', queryErr);
