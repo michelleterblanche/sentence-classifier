@@ -24,7 +24,7 @@ function loadSentence() {
         return;
     }
     const sentence = sentences[currentSentenceIndex];
-    document.getElementById('sentence').innerText = sentence.text;
+    document.getElementById('sentence').innerText = sentence.sentence;
 }
 
 // Handle the user's answer
